@@ -36,13 +36,13 @@ class Message(Resource):
         parser.add_argument('printed_once', type=bool)
 
         args = parser.parse_args()
-        if 'message' in args:
+        if 'message' in args and args['message']:
             message.message = args['message']
-        if 'duration' in args:
+        if 'duration' in args and args['duration']:
             message.duration = args['duration']
-        if 'printed_times' in args:
+        if 'printed_times' in args and args['printed_times']:
             message.printed_times = args['printed_times']
-        if 'printed_once' in args:
+        if 'printed_once' in args and args['printed_once']:
             message.printed_once = args['printed_once']
         return message
 

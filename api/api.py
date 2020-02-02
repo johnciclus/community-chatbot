@@ -1,21 +1,63 @@
-from flask import Flask
-from flask_restful import Api
-from resources import Message, Messages
-import os
+from flask import Flask, Blueprint, request, jsonify, make_response
+from flask_restful import Api, Resource
+from models import db, Category, CategorySchema, Message, MessageSchema
+from sqlalchemy.exc import SQLAlchemyError
+import status 
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-DEBUG = True
-PORT = 5000
-HOST = "127.0.0.1"
-SQLALCHEMY_ECHO = False
-SQLALCHEMY_TRACK_MODIFICATIONS = True
-SQLALCHEMY_DATABASE_URI = "postgresql://{DB_USER}:{DB_PASS}@{DB_ADDR}/{DB_NAME}".format(DB_USER="user_name", DB_PASS="password", DB_ADDR="127.0.0.1", DB_NAME="messages")
-SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
+api_bp = Blueprint('api', __name__)
+category_schema = CategorySchema()
+message_schema = MessageSchema()
 
-app = Flask(__name__)
-api = Api(app)
-api.add_resource(Messages, '/api/messages/')
-api.add_resource(Message, '/api/messages/<int:id>', endpoint='message_endpoint')
+api = Api(api_bp)
 
-if __name__ == '__main__':
-    app.run(debug=DEBUG)
+class MessageResource(Resource):
+    def get(self, id):
+        message = Message.query.get_or_404(id)
+        result = message_schema.dump(message).data
+        return result
+    
+    def patch(self, id):
+        message = Message.query.get_or_404(id)
+        message_dict = request.get_json(force=True)
+        
+        if 'message' in message_dict:
+            message.message = message_dict['message']
+        
+        if 'duration' in message_dict:
+            message.duration = message_dict['duration']
+        
+        if 'printed_times' in message_dict:
+            message.printed_times = message_dict['printed_times']
+        
+        if 'printed_once' in message_dict:
+            message.printed_once = message_dict['printed_once']
+            dumped_message, dump_errors = message_schema.dump(message)
+        
+        if dump_errors:
+            return dump_errors, status.HTTP_400_BAD_REQUEST
+        
+        validate_errors = message_schema.validate(dumped_message)
+        #errors = message_schema.validate(data)
+        
+        if validate_errors:
+            return validate_errors, status.HTTP_400_BAD_REQUEST
+        
+        try:
+            message.update()
+            return self.get(id)
+        
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            resp = jsonify({"error": str(e)})
+            return resp, status.HTTP_400_BAD_REQUEST
+        
+        def delete(self, id):
+            message = Message.query.get_or_404(id)
+            try:
+                delete = message.delete(message)
+                response = make_response()
+                return response, status.HTTP_204_NO_CONTENT
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                resp = jsonify({"error": str(e)})
+                return resp, status.HTTP_401_UNAUTHORIZED

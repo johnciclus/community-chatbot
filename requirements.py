@@ -8,6 +8,7 @@ Flask==1.1.1
 flask-marshmallow==0.10.1
 Flask-Migrate==2.5.2
 Flask-RESTful==0.3.7
+Flask-Script==2.0.6
 Flask-SQLAlchemy==2.4.1
 idna==2.8
 itsdangerous==1.1.0
@@ -16,6 +17,7 @@ Mako==1.1.1
 MarkupSafe==1.1.1
 marshmallow==3.3.0
 marshmallow-sqlalchemy==0.21.0
+psycopg2-binary==2.8.4
 pymongo==3.10.1
 python-dateutil==2.8.1
 python-editor==1.0.4

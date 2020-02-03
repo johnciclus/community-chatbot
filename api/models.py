@@ -2,7 +2,6 @@ from marshmallow import Schema, fields, pre_load
 from marshmallow import validate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from flask_restful import fields
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -42,7 +41,7 @@ class Category(db.Model, AddUpdateDelete):
         self.name = name
 
 class CategorySchema(ma.Schema):
-    id = fields.Integer()# dump_only=True)
+    id = fields.Integer(dump_only=True)
     name = fields.String(required=True, validate=validate.Length(3))
     url = ma.URLFor('api.categoryresource', id='<id>', _external=True)
     messages = fields.Nested('MessageSchema', many=True, exclude=('category',))

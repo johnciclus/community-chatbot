@@ -151,21 +151,13 @@ class CategoryListResource(Resource):
             return errors, status.HTTP_400_BAD_REQUEST
         try:
             category = Category(request_dict['name'])
-            print('category')
-            print(category)
             category.add(category)
-            print('category.id')
-            print(category.id)
             query = Category.query.get(category.id)
-            print('query')
-            print(query)
             result = category_schema.dump(query)
-            print('result')
-            print(result)
             return result, status.HTTP_201_CREATED
         except SQLAlchemyError as e:
             db.session.rollback()
-            resp = jsonify({"error": str(e)})
+            resp = {"error": str(e)}
             return resp, status.HTTP_400_BAD_REQUEST
 
 
